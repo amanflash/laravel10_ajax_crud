@@ -120,29 +120,21 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
-            // Set up default headers for jQuery AJAX requests
             $.ajaxSetup({
                 headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    'X-CSRF-TOKEN': $('Meta[name="csrf-token"]').attr('content')
                 }
-            });
+            })
+
         });
-
-        function openEmployeeModal() {
-            $('#employee-modal').modal('show');
-            $('#employeeform')[0].reset(); // Reset the form
-            $('#employeemodal').text('Add Employee'); // Set modal title to 'Add Employee'
-            $('#id').val('');
-        }
-
         $('#ajax-crud-datatable').DataTable({
-            processing: true, // Enable processing indicator
-            serverSide: true, // Enable server-side processing
-            ajax: "{{ url('ajax-crud-datatable') }}", // URL to fetch data from
+            processing: true,
+            serverSide: true,
+            ajax: "{{ url('ajax-crud-datatable') }}",
             columns: [{
                     data: 'id',
                     name: 'id'
-                }, // Define columns and map to data
+                },
                 {
                     data: 'name',
                     name: 'name'
@@ -163,19 +155,22 @@
                     data: 'action',
                     name: 'action',
                     orderable: false
-                }, // 'action' column is not sortable
+                },
+
             ],
             order: [
                 [0, 'desc']
-            ], // Set initial sorting by column 0 (id) in descending order
+            ]
+
+
         });
 
 
 
 
-
-        function deleteRecord(id) {
-            if (confirm("Delete Record?")) {
+        function deleteFunc(id) {
+            if (confirm("Delete Record?") == true) {
+                var id = id;
                 $.ajax({
                     type: "POST",
                     url: "{{ url('delete') }}",
@@ -183,48 +178,71 @@
                         id: id
                     },
                     dataType: 'json',
-                    success: function(response) {
-                        // Assuming you're using DataTables for your table
-                        var dataTable = $('#ajax-crud-datatable').DataTable();
-                        dataTable.ajax.reload(); // Reload the DataTable after deleting the record
-                    },
-                    error: function(error) {
-                        console.error("Error deleting record: " + error);
+                    success: function(res) {
+                        var oTable = $('#ajax-crud-datatable').dataTable();
+                        oTable.fnDraw(false);
                     }
-                });
+                })
+
             }
         }
 
+ 
 
 
+        function add() {
+            $('#employee-modal').modal('show');
+            $('#employeeform').modal("reset");
+            $('#employeemodal').modal("Add Employee ");
+            $('#id').val('');
 
-
-
+        }
 
         function editFunc(id) {
-    $.ajax({
-        type: "POST", // HTTP request type
-        url: "{{ url('edit') }}", // URL to send the request to (replace with the actual endpoint)
-        data: {
-            id: id // Data to send with the request, in this case, the employee ID
-        },
-        dataType: 'json', // Expected data type of the response
-        success: function(res) { // Callback function for a successful response
-            console.log(res); // Log the response data to the console (for debugging)
+            $.ajax({
+                type: "POST",
+                url: "{{ url('edit') }}",
+                data: {
+                    id: id
+                },
+                datatype: 'json',
+                success: function(res) {
+                    console.log(res);
+                    $('#employeeModal').html("Edit Employee");
+                    $('#employee-modal').modal('show');
+                    $('#id').val(res.id);
+                    $('#name').val(res.name);
+                    $('#address').val(res.address);
+                    $('#email').val(res.email);
+                }
 
-            // Update the modal with the employee data for editing
-            $('#employeeModal').html("Edit Employee"); // Set the modal title
-            $('#employee-modal').modal('show'); // Show the modal
-            $('#id').val(res.id); // Set the ID field in the form
-            $('#name').val(res.name); // Set the name field in the form
-            $('#address').val(res.address); // Set the address field in the form
-            $('#email').val(res.email); // Set the email field in the form
+            });
+
         }
-    });
-}
 
-
-      
+        $('#EmployeeForm').submit(function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                type: 'POST',
+                url: "{{ url('store') }}",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: (data) => {
+                    $('#employee-modal').modal('hide');
+                    var oTable = $('#ajax-crud-datatable').dataTable();
+                    oTable.fnDraw(false);
+                    $('#btn-save').html('submit');
+                    $('#btn-save').attr('disabled', false);
+                    console.log(data)
+                },
+                error: function(data) {
+                    console.log(data);
+                }
+            });
+        });
     </script>
 </body>
 
