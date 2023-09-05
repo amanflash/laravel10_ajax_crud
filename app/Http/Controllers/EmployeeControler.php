@@ -5,25 +5,27 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\employee;
-use Datatables;
+use App\Http\Controllers\datatables;
 use GuzzleHttp\Psr7\Response;
 
 class EmployeeControler extends Controller
 {
-    public function index(){
-        if(request()->ajax()){
+    public function index()
+    {
+        // Check if the request is made via AJAX
+        if (request()->ajax()) {
+            // Initialize DataTables and configure it
             return datatables()->of(employee::select('*'))
-            ->addColumn('action','employee-action')
-            ->rawColumns(['action'])
-            ->addIndexColumn()
-            ->make(true);
-            
-        };
-
-        
+                ->addColumn('action', 'employee-action') // Add an "action" column with content from the "employee-action" view
+                ->rawColumns(['action']) // Specify that the "action" column contains raw HTML
+                ->addIndexColumn() // Add an index column with sequential numbers
+                ->make(true); // Generate the DataTable and return it as a JSON response
+        }
+    
+        // If not an AJAX request, render the "index" view
         return view('index');
-
     }
+    
 
     public function store(Request $request)
     {  
